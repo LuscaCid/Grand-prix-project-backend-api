@@ -12,7 +12,7 @@ studentRoutes.use(express.json())
  * adicionar conteudos na pagina da turma
  * 
  */
-studentRoutes.post('/student/register', verifyUserIsInApp, studentControllers.createAccount )
+studentRoutes.post('/student-register', verifyUserIsInApp, studentControllers.createAccount )
 
-
-module.exports = teacherRoutes
+studentRoutes.put('/student-update', studentControllers.updateAccount )
+module.exports = studentRoutes

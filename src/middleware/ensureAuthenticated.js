@@ -7,13 +7,15 @@ const ensureAuth = (req,res,next)=> {
   if(!authHeaders) throw new AppError('jsonwebtoken not passed', 401)
   const [, token] = authHeaders.split(' ')
   try { 
-    const {sub : user_id} = verify(token, authConfig.jwt.secret)
+    const {secret, expiresIn} = authConfig.jwt
+    const {sub : user_id} = verify(token, secret)
     req.user = {
-      id:  Number(user_id)
+      id:  Number(user_id),
+      expiresIn
     }
     return next()
   } catch {
     throw new AppError('jwt its invalid', 401)
   }
-}
+}     
 module.exports = ensureAuth

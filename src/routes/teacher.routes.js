@@ -12,8 +12,8 @@ teacherRoutes.use(express.json())
  * adicionar conteudos na pagina da turma
  * 
  */
-teacherRoutes.post('/teacher/register', teacherControllers.createAccount )
+teacherRoutes.post('/teacher-register', teacherControllers.createAccount )
 
-teacherRoutes.put('/teacher/update', teacherControllers.updateAccount)
+teacherRoutes.put('/teacher-update', teacherControllers.updateAccount)
 
 module.exports = teacherRoutes
