@@ -3,7 +3,7 @@ const studentRoutes = express()
 const StudentControllers = require('../controllers/studentControllers')
 const studentControllers = new StudentControllers()
 const verifyUserIsInApp = require('../middleware/VerifyIfIsInApp')
-
+const ensureAuth = require('../middleware/ensureAuthenticated')
 studentRoutes.use(express.json())
 
 /**
@@ -14,5 +14,5 @@ studentRoutes.use(express.json())
  */
 studentRoutes.post('/student-register', verifyUserIsInApp, studentControllers.createAccount )
 
-studentRoutes.put('/student-update', studentControllers.updateAccount )
+studentRoutes.put('/student-update', ensureAuth ,studentControllers.updateAccount )
 module.exports = studentRoutes

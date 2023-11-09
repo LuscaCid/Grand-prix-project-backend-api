@@ -3,7 +3,7 @@ const teacherRoutes = express()
 const TeacherControllers = require('../controllers/teacherControllers')
 const teacherControllers = new TeacherControllers()
 const verifyUserIsInApp = require('../middleware/VerifyIfIsInApp')
-
+const ensureAuth = require('../middleware/ensureAuthenticated')
 teacherRoutes.use(express.json())
 
 /**
@@ -14,6 +14,7 @@ teacherRoutes.use(express.json())
  */
 teacherRoutes.post('/teacher-register', verifyUserIsInApp , teacherControllers.createAccount )
 
-teacherRoutes.put('/teacher-update', teacherControllers.updateAccount)
+teacherRoutes.put('/teacher-update', ensureAuth, teacherControllers.updateAccount)
+
 
 module.exports = teacherRoutes

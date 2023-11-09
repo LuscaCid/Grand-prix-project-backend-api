@@ -5,12 +5,14 @@ const express = require('express');
 const PORT = 5555;
 const teacherRoutes = require('./routes/teacher.routes')
 const studentRoutes = require('./routes/students.routes')
-
+const sessionsRoutes = require('./routes/sessions.routes')
 const app = express();
 app.use(cors());
 app.use(express.json())
 app.use(teacherRoutes)
 app.use(studentRoutes)
+app.use(sessionsRoutes)
+
 app.use((error, req, res, next)=> {  
   if(error instanceof AppError){
     return res.status(error.status).json({

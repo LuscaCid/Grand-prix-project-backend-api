@@ -27,9 +27,8 @@ class StudentControllers {
 
   } 
   async updateAccount(req, res) {
-    //vou implementar o token no headers.authorization contendo o user.id 
-    // const user_id = req.user.id
-    const { user_id } = req.query
+    const user_id = req.user.id
+    
     const { newEmail , newPassword, oldPassword, newUsername } = req.body
     try {
       const exists = await knex('students').where({id : user_id}).first()

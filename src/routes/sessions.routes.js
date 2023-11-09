@@ -1,11 +1,12 @@
 const express= require('express')
-const SessionsControllers = require('../controllers/student-sessions-controllers')
+const StudentSessionsControllers = require('../controllers/student-sessions-controllers')
+const TeacherSessionsControllers = require('../controllers/teacher-sessions-controllers')
 const sessionsRoutes = express()
-const sessionsControllers = new SessionsControllers()
-
+const studentSessionsControllers = new StudentSessionsControllers()
+const teacherSessionsControllers = new TeacherSessionsControllers()
 sessionsRoutes.use(express.json())
 
-sessionsRoutes.post('/sessions')
+sessionsRoutes.post('/teacher-sessions', teacherSessionsControllers.createLogon)
 
 
 module.exports=sessionsRoutes
