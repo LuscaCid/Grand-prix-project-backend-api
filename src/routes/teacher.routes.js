@@ -14,5 +14,6 @@ teacherRoutes.use(express.json())
  */
 teacherRoutes.post('/teacher/register', teacherControllers.createAccount )
 
+teacherRoutes.put('/teacher/update', teacherControllers.updateAccount)
 
 module.exports = teacherRoutes

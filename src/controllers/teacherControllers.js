@@ -25,18 +25,22 @@ class TeacherControllers {
 
   } 
   async updateAccount(req, res) { 
-    const { user_id } = req.user
+    const { user_id } = req.query
     const { newEmail , newPassword, oldPassword, newUsername } = req.body
     try {
       const exists = await knex('teachers').where({id : user_id}).first()
       if(exists){
         if(newEmail) { 
-          const alreadyEmailInUse = await knex('teachers').where({email : newEmail})
-          alreadyEmailInUse && alreadyEmailInUse.id == exists.id ? ()=> {throw new AppError('E-mail já em uso', 401)} : ()=> {
-            knex('teachers')
+          const alreadyEmailInUse = await knex('teachers').where({email : newEmail}).first()
+          if(alreadyEmailInUse && alreadyEmailInUse.id != exists.id){
+            throw new AppError('E-mail já em uso', 401)
+          } else{
+            await knex('teachers')
             .where({id : exists.id})
             .update({email : newEmail})
-          } 
+            console.log('atualizou')
+          }
+           
         }
         if(newUsername) await knex('teachers').where({id : exists.id}).update({username : newUsername})
           
@@ -46,12 +50,12 @@ class TeacherControllers {
           const verify = await compare(oldPassword, passwordInDB)
           if(!verify)throw new AppError('As senhas não coincidem')
         }
-      }
+      } else throw new AppError('usuario nao autenticado', 401)
 
     } catch (error) {
       return console.log(error)
     }
-    
+    return res.json()
     
   }
 }
