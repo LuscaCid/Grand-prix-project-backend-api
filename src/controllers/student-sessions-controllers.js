@@ -6,9 +6,9 @@ const authConfig = require('../config/authConfig')
 
 class StudentsSessionsControllers {
   async createLogon(req, res){
-    const {email , password} = req.body
+    const {username , password} = req.body
 
-    const user = await knex('students').where({email}).first()
+    const user = await knex('students').where({username}).first()
     
     if(!user)throw new AppError('Usuário ou senha inválidos', 401)
     
