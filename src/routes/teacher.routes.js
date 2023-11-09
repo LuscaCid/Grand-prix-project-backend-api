@@ -12,7 +12,7 @@ teacherRoutes.use(express.json())
  * adicionar conteudos na pagina da turma
  * 
  */
-teacherRoutes.post('/teacher-register', teacherControllers.createAccount )
+teacherRoutes.post('/teacher-register', verifyUserIsInApp , teacherControllers.createAccount )
 
 teacherRoutes.put('/teacher-update', teacherControllers.updateAccount)
 

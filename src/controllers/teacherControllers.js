@@ -5,58 +5,90 @@ const AppError = require('../utils/AppError')
 class TeacherControllers {
   async createAccount(req,res) { 
     const { username, password, email, name, cpf } = req.body
-    console.log('chegou')
-    const hashedPassword = await hash(password , 8)
 
-      const user = await knex('teachers')
+    const hashedPassword = await hash(password , 8)
+    const userExists = await knex('teachers').where({email}).first()
+    console.log(userExists)
+    if(userExists)throw new AppError('E-mail em uso.')
+    try {
+      await knex('teachers')
       .insert({
         username, 
         password : hashedPassword, 
         email, 
         name, 
         cpf
-      }).then(()=> console.log('created')).catch(e => console.log(e))
-
-      return res.json(user)
-    
-      
-      
-    
+      })
+      return res.status(201).json()
+    } catch (error) { 
+      console.log(error)
+      return res.status(error.status).json()
+    }
 
   } 
   async updateAccount(req, res) { 
+     //vou implementar o token no headers.authorization contendo o user.id 
+    // const user_id = req.user.id
     const { user_id } = req.query
     const { newEmail , newPassword, oldPassword, newUsername } = req.body
     try {
       const exists = await knex('teachers').where({id : user_id}).first()
       if(exists){
         if(newEmail) { 
-          const alreadyEmailInUse = await knex('teachers').where({email : newEmail}).first()
-          if(alreadyEmailInUse && alreadyEmailInUse.id != exists.id){
-            throw new AppError('E-mail já em uso', 401)
-          } else{
+          const alreadyEmailInUse = await knex('teachers')
+          .where({email : newEmail})
+          .first()
+          if(alreadyEmailInUse && alreadyEmailInUse.id != exists.id)throw new AppError('E-mail ja utilizado na aplicacao', 401)
+          try { 
             await knex('teachers')
             .where({id : exists.id})
-            .update({email : newEmail})
-            console.log('atualizou')
+            .update("email" , newEmail)
+            
+        } catch(e) {
+          console.log(e)
           }
-           
         }
-        if(newUsername) await knex('teachers').where({id : exists.id}).update({username : newUsername})
+        if(newUsername){
+          const alreadyUsernameInUse = await knex('teachers').where({username : newUsername}).first()
+
+          if(alreadyUsernameInUse && alreadyUsernameInUse.id != exists.id)throw new AppError('Nickname já usado.')
+
+          await knex('teachers')
+          .where({id : exists.id})
+          .update({username : newUsername})
+        } 
           
         if(oldPassword && newPassword) { 
-          const passwordInDB = await knex('teachers').select("password").where({id : exists.id})
+          try { 
+            const passwordInDB = await knex('teachers')
+            .where({id : exists.id})
+            .first()
 
-          const verify = await compare(oldPassword, passwordInDB)
-          if(!verify)throw new AppError('As senhas não coincidem')
+            console.log(passwordInDB.password )
+
+            const verify = await compare(oldPassword ,passwordInDB.password)
+            if(!verify)throw new AppError('As senhas não coincidem!')
+            
+            const hashedPassword = await hash(newPassword, 8)
+            await knex('teachers')
+            .where({id : exists.id}).update("password", hashedPassword)
+          } catch (e) {
+            console.log(e)
+            return res.json(e)
+          }
+          
         }
-      } else throw new AppError('usuario nao autenticado', 401)
+      }
 
     } catch (error) {
-      return console.log(error)
+      console.log(error)
+      return res.status(500).json()
+
     }
-    return res.json()
     
+    return res.status(200).json({
+      message : "updated with success"
+    })
   }
 }
 

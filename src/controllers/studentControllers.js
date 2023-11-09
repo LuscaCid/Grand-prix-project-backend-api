@@ -92,6 +92,8 @@ class StudentControllers {
       message : "updated with success"
     })
   }
+
+
 }
 
 module.exports = StudentControllers
