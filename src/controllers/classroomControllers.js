@@ -47,54 +47,29 @@ class ClassroomControllers{
         professor_email: element.email
       }
     })
-
     return res.json(filteredInfo) 
-
   }
   async insertStudent(req,res) {
     
-    const { student_id , class_id} = req.body
+    const { student_id , class_id} = req.body //o class id vem quando ele clicka na turma 
+                                              //apos selecionar um estudante pesquisado
+    const studentInClass= await knex('classPartner')
+    .where({class_id})
+    .where("student_id", student_id)
+    .first()
 
-    try {
-      const studentInClass= await knex('classPartner')
-      .where({class_id})
-      .where("student_id", student_id)
-      .first()
+    console.log(studentInClass)
 
-      console.log(studentInClass)
+    if(studentInClass)throw new AppError('student already in classroom', 401)
 
-      if(studentInClass)throw new AppError('student already in classroom', 401)
+    const id_partner = await knex('classPartner')
+    .insert({student_id , class_id}) //o id da turma que este aluno ta entrando
 
-      const id_partner = await knex('classPartner')
-      .insert({student_id , class_id}) //o id da turma que este aluno ta entrando
+    
+    return res.status(200).json({
+      message : "inserted with success"
+    })
 
-      const qtdStudents = await knex("classroom")
-      .column("qtd_students")
-      .where({id : class_id}).first()
-      const {qtd_students} = qtdStudents
-      console.log(qtd_students)
-      if(!qtd_students){
-        console.log('é undefined')
-        let value = 1
-         await knex('classroom')
-        .where({id : class_id})
-        .update("qtd_students", value)
-
-      } else {
-        console.log(qtd_students)
-        let value = Number(qtd_students) + 1;
-        await knex('classroom')
-        .where({id : class_id})
-        .update("qtd_students", value)
-      }  
-      
-      return res.status(200).json({
-        message : "inserted with success"
-      })
-    } catch (e){
-      console.log(e)
-      return res.json()
-    }
   }
   async viewAllClasses(req, res){
     const user_id = req.user.id //id do professor que ta entrando, esse controler faz ele visualizar todas as turmas criadas por ele
@@ -128,7 +103,7 @@ class ClassroomControllers{
       const allClass = await knex('classPartner')
       .where({student_id}).where({class_id}).first()
       console.log(allClass)
-      
+
       if(!allClass)throw new AppError('este aluno nao faz parte desta turma')
       
       const studentInfo = await knex('students').where({id : student_id}).first()

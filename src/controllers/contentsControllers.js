@@ -5,25 +5,30 @@ class ContentsControllers{
   async createContent(req, res) {
     const user_id = req.user.id
     const {title, description, video_url, class_id } =  req.body
-
-    const ContentId = await knex('contents')
-    .insert({
-      title, 
-      description, 
-      video_url, 
-      class_id,
-      teacher_id : user_id
-    })
-    .then(()=>{
-      console.log("success")
+    const classExists = await knex('classroom').where({id : class_id}).first()
+    if(classExists){
+      const ContentId = await knex('contents')
+      .insert({
+        title, 
+        description, 
+        video_url, 
+        class_id,
+        teacher_id : user_id
+      })
+      .then(()=>{
+        console.log("success")
+        
+      } )
+      .catch(e => {
+        console.log(e)
+        return res.status(500).json({message : e})
+      })
       return res.status(201).json(ContentId)
-    } )
-    .catch(e => {
-      console.log(e)
-      return res.status(500).json({message : "deu ruim"})
-    })
+    }
+    throw new AppError('turma inexistente', 401)
+    
     //.finally(knex.destroy())
-
+    
   }
   async deleteContent(req, res) {
     const {content_id} = req.body
@@ -34,17 +39,17 @@ class ContentsControllers{
     await knex('contents')
     .where({id : content_id})
     .delete()
-    
-    return res.json()
+
+    return res.status(200).json({message : "deleted with success"})
   }
   async updateContent(req, res){//rota acessada pelo professor para atualizar seu proprio cont
     const {newTitle, newDescription, newUrl} = req.body
-    const {content_id} = req.query
+    const {content_id} = req.body
     const user_id = req.user.id
 
     const updatedContent = await knex('contents')
     .where({id : content_id})
-    .where({teacher_id : user_id})
+    .first()
     if(!updatedContent)throw new AppError('conteudo de curso nao encontrado', 401)
     if(newTitle){
       await knex('contents')
@@ -67,7 +72,7 @@ class ContentsControllers{
     return res.status(200).json({message : "updated with success"})
   }
 
-  async viewAllContents(){//rota do professor para ver todos os conteudos lancados nas turmas
+  async viewAllContents(req, res){//rota do professor para ver todos os conteudos lancados nas turmas
     const user_id = req.user.id
     
     const allContents = await knex('contents')

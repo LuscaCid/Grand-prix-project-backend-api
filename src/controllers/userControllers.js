@@ -21,16 +21,25 @@ class UserControllers {
     console.log(userExists)
     if(userExists)throw new AppError('E-mail em uso.')
     try {
-      await knex(isStudent ? 'students' : 'teachers')
+      const user_id = await knex(isStudent ? 'students' : 'teachers')//n tem a coluna chamda name na tabela teacher
       .insert({
         username, 
         password : hashedPassword, 
-        email, 
-        name, 
+        email,   
         cpf
       })
+      const id = user_id[0]
+      if(isStudent){
+        await knex('students')
+        .where({id}).update("name", name)
+      } else {
+        await knex('teachers')
+        .where({id}).update({teacher_name : name})
+      }
+      console.log(id)
       return res.status(201).json()
     } catch (error) { 
+      console.log(error)
       console.log(error)
       return res.status(400).json({message: 'erro nessa funcao'})
     }
@@ -38,10 +47,10 @@ class UserControllers {
   } 
   async updateAccount(req, res) {
     const user_id = req.user.id
-  
+    
     const { newEmail , newPassword, oldPassword, newUsername , isStudent} = req.body
     console.log(isStudent)
-   
+   //recebe isStudents na hora do login, vai estar presente no contexto da APLICACAO
       const exists = await knex(isStudent ? 'students' : 'teachers')
       .where({id : user_id})
       .first()
@@ -99,13 +108,16 @@ class UserControllers {
   }
   async searchForStudent(req, res){//procurar por um aluno em toda a aplicacao e retornar o seu id como sendo student_id para usar 
     const {name , username} = req.body
-    const searchedStudents = await knex('students')
-    .column(["name", "username", "cpf", "email"])
-    .whereLike("name", `%${name}%`)    
+    if(name){
+      const searchedStudents = await knex('students')
+      .column(["id","name", "username", "cpf", "email"])
+      .whereLike("name", `%${name}%`) 
+      return res.json( searchedStudents)   
+    }
 
     if(username){
       const studentsUsername = await knex('students')
-      .column(["name", "username", "cpf", "email"])
+      .column(["id","name", "username", "cpf", "email"])
       .whereLike("username", `%${username}%`)   
       .whereLike("name", `%${name}%`)   
 
