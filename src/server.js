@@ -2,27 +2,37 @@ require('express-async-errors');
 const AppError = require('./utils/AppError')
 const cors = require('cors');
 const express = require('express');
+
 const PORT = 5555;
-const teacherRoutes = require('./routes/teacher.routes')
-const studentRoutes = require('./routes/students.routes')
+
+const userRoutes = require('./routes/users.routes')
 const sessionsRoutes = require('./routes/sessions.routes')
+const classRoutes = require('./routes/classroom.routes')
+const contentsRoutes = require('./routes/contents.routes')
+const gradesRoutes = require('./routes/grades.routes')
+
 const app = express();
 app.use(cors());
 app.use(express.json())
-app.use(teacherRoutes)
-app.use(studentRoutes)
-app.use(sessionsRoutes)
 
-app.use((error, req, res, next)=> {  
+
+app.use(sessionsRoutes)
+app.use(classRoutes)
+app.use(userRoutes)
+app.use(contentsRoutes)
+app.use(gradesRoutes)
+
+app.use((error, request, response, next)=>{
   if(error instanceof AppError){
-    return res.status(error.status).json({
-      message : error.message,
-      status : error.status
-    })
+      return response.status(error.status).json({
+          status : "error",
+          message : error.message
+      })
   }
-  return res.status(500).json({
-    message : "Internal Server Error",
-    status : 500
+  console.error(error)
+  return response.status(500).json({
+      status : "500",
+      message : "internal server error"
   })
 })
 
