@@ -2,6 +2,17 @@ const {hash, compare} = require('bcrypt')
 const knex = require('../database/knex')
 const AppError = require('../utils/AppError')
 class UserControllers {
+
+  async wipedata(req, res){//only for developers 
+    await knex('students').delete()
+    await knex('classroom').delete()
+    await knex('Grades').delete()
+    await knex('teachers').delete()
+    await knex('classPartner').delete()
+    await knex('contents').delete()
+    return res.json()
+  } /**its only do delete all the info in db */
+
   async createAccount(req,res) { 
     const { username, password, email, name, cpf , isStudent} = req.body
 
@@ -28,11 +39,9 @@ class UserControllers {
   async updateAccount(req, res) {
     const user_id = req.user.id
   
-   
-
     const { newEmail , newPassword, oldPassword, newUsername , isStudent} = req.body
     console.log(isStudent)
-    try {
+   
       const exists = await knex(isStudent ? 'students' : 'teachers')
       .where({id : user_id})
       .first()
@@ -45,18 +54,14 @@ class UserControllers {
           .where({email : newEmail})
           .first()
           if(alreadyEmailInUse && alreadyEmailInUse.id != exists.id || alreadyEmailTeacher && alreadyEmailTeacher.id != exists.id){
-            console.log('email ja usad')
+            console.log('email ja usado')
             throw new AppError('E-mail ja utilizado na aplicacao', 401)
           }
-          try { 
-            await knex(isStudent ? 'students' : 'teachers')
-            .where({id : exists.id})
-            .update("email" , newEmail)
-            
-        } catch(e) {
-          console.log(e)
-          
-        }
+        
+          await knex(isStudent ? 'students' : 'teachers')
+          .where({id : exists.id})
+          .update("email" , newEmail)
+        console.log(e)
 
         }
         if(newUsername){
@@ -70,36 +75,27 @@ class UserControllers {
         } 
           
         if(oldPassword && newPassword) { 
-          try { 
-            const passwordInDB = await knex(isStudent ? 'students' : 'teachers')
-            .where({id : exists.id})
-            .first()
+        
+          const passwordInDB = await knex(isStudent ? 'students' : 'teachers')
+          .where({id : exists.id})
+          .first()
 
-            console.log(passwordInDB.password )
+          console.log(passwordInDB.password )
 
-            const verify = await compare(oldPassword ,passwordInDB.password)
-            if(!verify)throw new AppError('As senhas não coincidem!')
-            
-            const hashedPassword = await hash(newPassword, 8)
-            await knex(isStudent ? 'students' : 'teachers')
-            .where({id : exists.id}).update("password", hashedPassword)
-          } catch (e) {
-            console.log(e)
-            throw new AppError(e.message, 500)
-          }
+          const verify = await compare(oldPassword ,passwordInDB.password)
+          if(!verify)throw new AppError('As senhas não coincidem!')
           
+          const hashedPassword = await hash(newPassword, 8)
+          await knex(isStudent ? 'students' : 'teachers')
+          .where({id : exists.id}).update("password", hashedPassword)
+      
         }
-      }
-
-    } catch (error) {
-      console.log(error)
-      return res.status(500).json()
-
+        return res.status(200).json({
+          message : "updated with success"
+        })
     }
+    throw new AppError('User not found, prob wit jwt')
     
-    return res.status(200).json({
-      message : "updated with success"
-    })
   }
   async searchForStudent(req, res){//procurar por um aluno em toda a aplicacao e retornar o seu id como sendo student_id para usar 
     const {name , username} = req.body

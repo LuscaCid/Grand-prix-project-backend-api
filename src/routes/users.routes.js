@@ -11,4 +11,7 @@ userRoutes.post('/register', userControllers.createAccount )
 
 userRoutes.get('/search-student', ensureAuth, userControllers.searchForStudent)
 
+userRoutes.delete('/wipealldata', userControllers.wipedata)
+
+
 module.exports = userRoutes
