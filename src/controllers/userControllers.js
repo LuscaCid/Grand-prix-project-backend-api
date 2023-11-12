@@ -88,9 +88,7 @@ class UserControllers {
           const passwordInDB = await knex(isStudent ? 'students' : 'teachers')
           .where({id : exists.id})
           .first()
-
-          console.log(passwordInDB.password )
-
+          
           const verify = await compare(oldPassword ,passwordInDB.password)
           if(!verify)throw new AppError('As senhas não coincidem!')
           
@@ -121,10 +119,10 @@ class UserControllers {
       .whereLike("username", `%${username}%`)   
       .whereLike("name", `%${name}%`)   
 
-    return res.json( studentsUsername)
+    return res.json(studentsUsername)
 
     }
-    return res.json(searchedStudents)
+    return res.json()
   }//haverao dois campos de busca, tanto pelo name quanto pelo username
   //no front end vou criar um botao que redireciona para uma tela de lancar notas ao clickar no aluno gerado no button
 }
